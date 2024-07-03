@@ -8,10 +8,11 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RoleGuard } from './auth/guards/role.guard';
 import { PrismaModule } from './prisma/prisma.module';
 import { Prisma2Module } from './prisma2/prisma2.module';
+import { FeriadosModule } from './feriados/feriados.module';
 
 @Global()
 @Module({
-  imports: [UsuariosModule, AuthModule, PrismaModule, Prisma2Module],
+  imports: [UsuariosModule, AuthModule, PrismaModule, Prisma2Module, FeriadosModule],
   controllers: [AppController],
   providers: [
     AppService,

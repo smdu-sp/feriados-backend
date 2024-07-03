@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -30,4 +30,12 @@ model Usuario {
   atualizadoEm DateTime @default(now()) @updatedAt
 
   @@map("usuarios")
+}
+
+model feriados {
+  id        String    @id @default(uuid())
+  nome      String
+  descricao String
+
+  @@map("feriados")
 }
