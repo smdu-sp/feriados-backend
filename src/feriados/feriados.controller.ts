@@ -19,9 +19,10 @@ export class FeriadosController {
     return this.feriadosService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.feriadosService.findOne(+id);
+  @Get('data/:data')
+  findOne(@Param('data') data: string) {
+    var novaData = new Date(data)
+    return this.feriadosService.findOne(novaData);
   }
 
   @Patch(':id')

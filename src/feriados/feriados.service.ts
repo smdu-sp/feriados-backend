@@ -3,18 +3,19 @@ import { CreateFeriadoDto } from './dto/create-feriado.dto';
 import { UpdateFeriadoDto } from './dto/update-feriado.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppService } from 'src/app.service';
+import { equal } from 'assert';
 
 @Injectable()
 export class FeriadosService {
   constructor(
     private prisma: PrismaService,
     private app: AppService
-  ) {}
+  ) { }
 
   async create(createFeriadoDto: CreateFeriadoDto) {
     const { nome, data, descricao } = createFeriadoDto
     const criar = await this.prisma.feriados.create({
-      data: {nome, data, descricao}
+      data: { nome, data, descricao }
     })
     if (!criar) { throw new ForbiddenException('Não foi possivel regegistrar o feriado') }
     return criar;
@@ -22,12 +23,21 @@ export class FeriadosService {
 
   findAll() {
     const buscarTudo = this.prisma.feriados.findMany({});
-    if (!buscarTudo) { throw new ForbiddenException('Não foi possivel encontrar feriados')}
+    if (!buscarTudo) { throw new ForbiddenException('Não foi possivel encontrar feriados') }
     return buscarTudo;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} feriado`;
+  findOne(data: Date) {
+    const buscaData = this.prisma.feriados.findMany({
+      where: {
+        AND: [
+          { data: { gte: data } },
+          { data: { lte: data } }
+        ]
+      }
+    });
+    if (!buscaData) { throw new ForbiddenException('Não foi possivel encontrar feriados') }
+    return buscaData
   }
 
   update(id: number, updateFeriadoDto: UpdateFeriadoDto) {
