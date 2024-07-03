@@ -23,6 +23,7 @@ export class FeriadosService {
   findAll() {
     const buscarTudo = this.prisma.feriados.findMany({});
     if (!buscarTudo) { throw new ForbiddenException('Não foi possivel encontrar feriados')}
+    return buscarTudo;
   }
 
   findOne(id: number) {
