@@ -1,1 +1,5 @@
-export class CreateFeriadoDto {}
+export class CreateFeriadoDto {
+    nome: string
+    data: Date
+    descricao: string
+}

@@ -35,7 +35,8 @@ model Usuario {
 model feriados {
   id        String    @id @default(uuid())
   nome      String
-  descricao String
+  data      DateTime
+  descricao String?
 
   @@map("feriados")
 }

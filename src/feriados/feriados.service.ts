@@ -1,15 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateFeriadoDto } from './dto/create-feriado.dto';
 import { UpdateFeriadoDto } from './dto/update-feriado.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { AppService } from 'src/app.service';
 
 @Injectable()
 export class FeriadosService {
-  create(createFeriadoDto: CreateFeriadoDto) {
-    return 'This action adds a new feriado';
+  constructor(
+    private prisma: PrismaService,
+    private app: AppService
+  ) {}
+
+  async create(createFeriadoDto: CreateFeriadoDto) {
+    const { nome, data, descricao } = createFeriadoDto
+    const criar = await this.prisma.feriados.create({
+      data: {nome, data, descricao}
+    })
+    if (!criar) { throw new ForbiddenException('Não foi possivel regegistrar o feriado') }
+    return criar;
   }
 
   findAll() {
-    return `This action returns all feriados`;
+    const buscarTudo = this.prisma.feriados.findMany({});
+    if (!buscarTudo) { throw new ForbiddenException('Não foi possivel encontrar feriados')}
   }
 
   findOne(id: number) {
