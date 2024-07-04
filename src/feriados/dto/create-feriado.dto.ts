@@ -5,3 +5,9 @@ export class CreateFeriadoDto {
     nivel: string
     tipo: string
 }
+
+export class Log{
+    id_feriado: string
+    estado: JSON
+    id_usuario: string
+}

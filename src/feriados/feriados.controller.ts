@@ -3,6 +3,9 @@ import { FeriadosService } from './feriados.service';
 import { CreateFeriadoDto } from './dto/create-feriado.dto';
 import { UpdateFeriadoDto } from './dto/update-feriado.dto';
 import { Permissoes } from 'src/auth/decorators/permissoes.decorator';
+import { Log } from './dto/create-feriado.dto';
+import { UsuarioAtual } from 'src/auth/decorators/usuario-atual.decorator';
+import { Usuario } from '@prisma/client';
 
 @Controller('feriados')
 export class FeriadosController {
@@ -10,8 +13,8 @@ export class FeriadosController {
 
   @Permissoes('DEV', 'ADM')
   @Post('criar')
-  create(@Body() createFeriadoDto: CreateFeriadoDto) {
-    return this.feriadosService.create(createFeriadoDto);
+  create(@Body() createFeriadoDto: CreateFeriadoDto, log: Log, @UsuarioAtual() usuario: Usuario) {
+    return this.feriadosService.create(createFeriadoDto, log, usuario.id);
   }
 
   @Get('buscar')
@@ -23,6 +26,11 @@ export class FeriadosController {
   findOne(@Param('data') data: string) {
     var novaData = new Date(data)
     return this.feriadosService.findOne(novaData);
+  }
+
+  @Get('ano/:ano')
+  buscarAno(@Param('ano') ano: string) {
+    return this.feriadosService.buscarAno(+ano);
   }
 
   @Patch(':id')

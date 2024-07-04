@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateFeriadoDto } from './dto/create-feriado.dto';
+import { Log } from './dto/create-feriado.dto';
 import { UpdateFeriadoDto } from './dto/update-feriado.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppService } from 'src/app.service';
@@ -14,12 +15,14 @@ export class FeriadosService {
 
 
 
-  async create(createFeriadoDto: CreateFeriadoDto) {
+  async create(createFeriadoDto: CreateFeriadoDto, log: Log, usuario_id: string) {
     const { nome, data, descricao, nivel, tipo } = createFeriadoDto
     const criar = await this.prisma.feriados.create({
       data: { nome, data, descricao, nivel, tipo }
     })
-    if (!criar) { throw new ForbiddenException('Não foi possivel regegistrar o feriado') }
+    await this.prisma.log.create({
+      data: {id_feriado: criar.id, estado: criar, id_usuario: usuario_id}
+    })
     return criar;
   }
 
@@ -55,6 +58,22 @@ export class FeriadosService {
     });
     if (!buscaData) { throw new ForbiddenException('Não foi possivel encontrar feriados') }
     return buscaData
+  }
+
+  async buscarAno(ano: number){
+    const busca_ano = this.prisma.feriados.findMany({
+      where: {
+        AND: [
+          { data: { gte: new Date(`${ano}-01-01`) } },
+          { data: { lt: new Date(`${ano + 1}-01-01`) } }
+        ]
+      },
+      orderBy: {
+        data: 'asc'
+      }
+    })
+    if (!busca_ano) { throw new ForbiddenException('Não foi possivel encontrar feriados')}
+    return busca_ano;
   }
 
   update(id: number, updateFeriadoDto: UpdateFeriadoDto) {
