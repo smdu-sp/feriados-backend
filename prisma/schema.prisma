@@ -40,6 +40,8 @@ model Feriados {
   data            DateTime      @unique
   tipo            String
   nivel           String
+  status          Int
+  modo            Int
   descricao       String?
 
   log             Log[]
