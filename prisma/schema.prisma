@@ -18,25 +18,47 @@ enum Permissao {
 }
 
 model Usuario {
-  id        String    @id @default(uuid())
-  nome      String
-  login     String    @unique
-  email     String    @unique
-  permissao Permissao @default(USR)
-  status    Int       @default(1)
+  id              String        @id @default(uuid())
+  nome            String
+  login           String        @unique
+  email           String        @unique
+  permissao       Permissao     @default(USR)
+  status          Int           @default(1)
 
-  ultimoLogin  DateTime @default(now())
-  criadoEm     DateTime @default(now())
-  atualizadoEm DateTime @default(now()) @updatedAt
+  log             Log[]
+
+  ultimoLogin     DateTime      @default(now())
+  criadoEm        DateTime      @default(now())
+  atualizadoEm    DateTime      @default(now()) @updatedAt
 
   @@map("usuarios")
 }
 
-model feriados {
-  id        String    @id @default(uuid())
-  nome      String
-  data      DateTime
-  descricao String?
+model Feriados {
+  id              String        @id @default(uuid())
+  nome            String
+  data            DateTime      @unique
+  tipo            String
+  nivel           String
+  descricao       String?
+
+  log             Log[]
+
+  criadoEm        DateTime      @default(now())
+  atualizadoEm    DateTime      @default(now()) @updatedAt
 
   @@map("feriados")
+}
+
+model Log {
+  id              String        @id @default(uuid())
+  id_feriado      String
+  feriados        Feriados      @relation(fields: [id_feriado], references: [id])
+  estado          Json?
+  id_usuario      String
+  usuario         Usuario       @relation(fields: [id_usuario], references: [id])
+
+  criadoEm        DateTime      @default(now())
+
+  @@map("log")
 }

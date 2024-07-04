@@ -12,23 +12,40 @@ export class FeriadosService {
     private app: AppService
   ) { }
 
+
+
   async create(createFeriadoDto: CreateFeriadoDto) {
-    const { nome, data, descricao } = createFeriadoDto
+    const { nome, data, descricao, nivel, tipo } = createFeriadoDto
     const criar = await this.prisma.feriados.create({
-      data: { nome, data, descricao }
+      data: { nome, data, descricao, nivel, tipo }
     })
     if (!criar) { throw new ForbiddenException('Não foi possivel regegistrar o feriado') }
     return criar;
   }
 
   findAll() {
-    const buscarTudo = this.prisma.feriados.findMany({});
+    const buscarTudo = this.prisma.feriados.findMany({
+      select: {
+        nome: true,
+        data: true,
+        descricao: true,
+        nivel: true,
+        tipo: true
+      }
+    });
     if (!buscarTudo) { throw new ForbiddenException('Não foi possivel encontrar feriados') }
     return buscarTudo;
   }
 
   findOne(data: Date) {
     const buscaData = this.prisma.feriados.findMany({
+      select: {
+        nome: true,
+        data: true,
+        descricao: true,
+        nivel: true,
+        tipo: true
+      },
       where: {
         AND: [
           { data: { gte: data } },
