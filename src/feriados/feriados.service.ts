@@ -5,6 +5,7 @@ import { UpdateFeriadoDto } from './dto/update-feriado.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppService } from 'src/app.service';
 import { equal } from 'assert';
+import { equals } from 'class-validator';
 
 @Injectable()
 export class FeriadosService {
@@ -13,16 +14,18 @@ export class FeriadosService {
     private app: AppService
   ) { }
 
-
+  async gera_log(id_feriado: string, estado: any, id_usuario: string) {
+    await this.prisma.log.create({
+      data: { id_feriado, estado: estado, id_usuario }
+    })
+  }
 
   async create(createFeriadoDto: CreateFeriadoDto, log: Log, usuario_id: string) {
-    const { nome, data, descricao, nivel, tipo } = createFeriadoDto
+    const { nome, data, descricao, nivel, tipo, modo, status } = createFeriadoDto
     const criar = await this.prisma.feriados.create({
-      data: { nome, data, descricao, nivel, tipo }
+      data: { nome, data, descricao, nivel, tipo, modo, status }
     })
-    await this.prisma.log.create({
-      data: {id_feriado: criar.id, estado: criar, id_usuario: usuario_id}
-    })
+    await this.gera_log(criar.id, criar, usuario_id)
     return criar;
   }
 
@@ -40,8 +43,8 @@ export class FeriadosService {
     return buscarTudo;
   }
 
-  findOne(data: Date) {
-    const buscaData = this.prisma.feriados.findMany({
+  async findOne(data: Date) {
+    const buscaData = await this.prisma.feriados.findMany({
       select: {
         nome: true,
         data: true,
@@ -60,7 +63,7 @@ export class FeriadosService {
     return buscaData
   }
 
-  async buscarAno(ano: number){
+  async buscarAno(ano: number) {
     const busca_ano = this.prisma.feriados.findMany({
       where: {
         AND: [
@@ -72,12 +75,37 @@ export class FeriadosService {
         data: 'asc'
       }
     })
-    if (!busca_ano) { throw new ForbiddenException('Não foi possivel encontrar feriados')}
+    if (!busca_ano) { throw new ForbiddenException('Não foi possivel encontrar feriados') }
     return busca_ano;
   }
 
-  update(id: number, updateFeriadoDto: UpdateFeriadoDto) {
-    return `This action updates a #${id} feriado`;
+  async update(id: string, updateFeriadoDto: UpdateFeriadoDto) {
+    const feriado = await this.prisma.feriados.findUnique({
+      where: { id }, select: { modo: true, data: true }
+    })
+    if (feriado.modo === 0) {
+      const atualizar_feriado = await this.prisma.feriados.updateMany({
+        where: {
+          AND: [
+            {
+              data: {
+                
+              },
+            },
+          ],
+        },
+        data: updateFeriadoDto
+      })
+      if (atualizar_feriado) { throw new ForbiddenException('Não possivel atualizar este feriado') }
+    } else {
+      const atualizar_feriado = await this.prisma.feriados.updateMany({
+        where: {
+          id: { equals: id }
+        },
+        data: updateFeriadoDto
+      })
+      if (atualizar_feriado) { throw new ForbiddenException('Não possivel atualizar este feriado') }
+    }
   }
 
   remove(id: number) {
