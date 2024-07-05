@@ -7,6 +7,8 @@ import { Log } from './dto/create-feriado.dto';
 import { UsuarioAtual } from 'src/auth/decorators/usuario-atual.decorator';
 import { Usuario } from '@prisma/client';
 import { IsPublic } from 'src/auth/decorators/is-public.decorator';
+import { Injectable, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Controller('feriados')
 export class FeriadosController {
@@ -14,8 +16,8 @@ export class FeriadosController {
 
   @Permissoes('DEV', 'ADM')
   @Post('criar')
-  create(@Body() createFeriadoDto: CreateFeriadoDto, log: Log, @UsuarioAtual() usuario: Usuario) {
-    return this.feriadosService.create(createFeriadoDto, log, usuario.id);
+  create(@Body() createFeriadoDto: CreateFeriadoDto, @UsuarioAtual() usuario: Usuario) {
+    return this.feriadosService.create(createFeriadoDto, usuario.id);
   }
 
   @IsPublic()
@@ -47,5 +49,12 @@ export class FeriadosController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.feriadosService.remove(+id);
+  }
+
+  @IsPublic()
+  @Post("gera-feriados-ano")
+  tarefa_recorrente(){
+    console.log("teste registro");
+    return this.feriadosService.tarefa_recorrente();
   }
 }
