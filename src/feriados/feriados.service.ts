@@ -20,14 +20,74 @@ export class FeriadosService {
     })
   }
 
-  async create(createFeriadoDto: CreateFeriadoDto, log: Log, usuario_id: string) {
+  async create(createFeriadoDto: CreateFeriadoDto, usuario_id: string) {
     const { nome, data, descricao, nivel, tipo, modo, status } = createFeriadoDto
-    const criar = await this.prisma.feriados.create({
-      data: { nome, data, descricao, nivel, tipo, modo, status }
-    })
-    await this.gera_log(criar.id, criar, usuario_id)
-    return criar;
+    if (modo === 0) {
+      const recorrente = await this.prisma.recorrente.create({
+        data: { nome, data, descricao, nivel, tipo, modo, status }
+      });
+      const feriado = await this.prisma.feriados.create({
+        data: { nome, data, descricao, nivel, tipo, modo, status }
+      })
+      await this.gera_log(feriado.id, feriado, usuario_id)
+      return [recorrente, feriado];
+    } else {
+      const criar = await this.prisma.feriados.create({
+        data: { nome, data, descricao, nivel, tipo, modo, status }
+      })
+      await this.gera_log(criar.id, criar, usuario_id)
+      return criar;
+    }
   }
+
+
+  async tarefa_recorrente() {
+    const recorrentes = await this.prisma.recorrente.findMany({
+      where: {
+        status: 1,
+      },
+      select: {
+        nome: true,
+        data: true,
+        descricao: true,
+        nivel: true,
+        tipo: true,
+        modo: true,
+        status: true,
+      },
+    });
+
+    const hoje = new Date();
+    const anoAtual = hoje.getFullYear();
+    const feriadosData = recorrentes.map((recorrente) => {
+      // Separa a data em dia e mês
+      const partesData = recorrente.data.toString().split("-");
+      const novaData = partesData[0]
+      console.log(new Date(novaData).toString());
+      
+      // Constrói a data no formato ISO 8601
+      const dataFormatada = `${anoAtual + 1}-${parseInt(partesData[1])}-${parseInt(partesData[0])}T00:00:00.00Z`;
+    
+      // Retorna um novo objeto com a data formatada
+      return {
+        nome: recorrente.nome,
+        data: dataFormatada,
+        descricao: recorrente.descricao,
+        nivel: recorrente.nivel,
+        tipo: recorrente.tipo,
+        modo: recorrente.modo,
+        status: recorrente.status,
+      };
+    });
+    
+
+    const registrarFeriados = await this.prisma.feriados.createMany({
+      data: feriadosData,
+    });
+
+    return registrarFeriados;
+  }
+
 
   findAll() {
     const buscarTudo = this.prisma.feriados.findMany({
@@ -37,6 +97,9 @@ export class FeriadosService {
         descricao: true,
         nivel: true,
         tipo: true
+      },
+      orderBy: {
+
       }
     });
     if (!buscarTudo) { throw new ForbiddenException('Não foi possivel encontrar feriados') }
@@ -89,7 +152,7 @@ export class FeriadosService {
           AND: [
             {
               data: {
-                
+
               },
             },
           ],
@@ -106,6 +169,28 @@ export class FeriadosService {
       })
       if (atualizar_feriado) { throw new ForbiddenException('Não possivel atualizar este feriado') }
     }
+  }
+
+  async buscarPorNome(nome: string) {
+
+    const busca = this.prisma.feriados.findMany({
+      where: {
+        nome
+      },
+      select: {
+        nome: true,
+        data: true,
+        descricao: true,
+        nivel: true,
+        tipo: true,
+        status: true,
+        modo: true
+      }
+    })
+
+    if (!busca) throw new ForbiddenException('não foi possivel achar um feriado')
+
+    return busca;
   }
 
   remove(id: number) {
