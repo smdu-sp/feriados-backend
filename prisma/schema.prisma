@@ -37,7 +37,7 @@ model Usuario {
 model Feriados {
   id              String        @id @default(uuid())
   nome            String
-  data            DateTime      @unique
+  data            DateTime      @unique     @db.Date
   tipo            String
   nivel           String
   status          Int
