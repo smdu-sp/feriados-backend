@@ -38,8 +38,8 @@ export class FeriadosController {
 
   @Permissoes('DEV', 'ADM')
   @Patch('atualizar/:data')
-  atualizar(@Param('data') dataUp: Date, @Body() updateFeriadoDto: UpdateFeriadoDto) {
-    return this.feriadosService.atualizar(dataUp, updateFeriadoDto);
+  atualizar(@Param('data') dataUp: Date, @Body() updateFeriadoDto: UpdateFeriadoDto, @UsuarioAtual() usuario: Usuario) {
+    return this.feriadosService.atualizar(dataUp, updateFeriadoDto, usuario.id);
   }
 
   @Post('gera-feriados-ano')
