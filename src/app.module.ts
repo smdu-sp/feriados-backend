@@ -9,6 +9,8 @@ import { RoleGuard } from './auth/guards/role.guard';
 import { PrismaModule } from './prisma/prisma.module';
 import { Prisma2Module } from './prisma2/prisma2.module';
 import { FeriadosModule } from './feriados/feriados.module';
+import { ScheduleModule } from '@nestjs/schedule';
+
 
 @Global()
 @Module({
@@ -26,5 +28,11 @@ import { FeriadosModule } from './feriados/feriados.module';
     },
   ],
   exports: [AppService],
+  
+})
+@Module({
+  imports: [
+    ScheduleModule.forRoot()
+  ],
 })
 export class AppModule {}
