@@ -47,4 +47,14 @@ export class FeriadosController {
     console.log("Tarefa recorrente executada");
     return this.feriadosService.tarefa_recorrente();
   }
+
+  @Patch('desativar/:id')
+  desativar(@Param('id') id: string) {
+    return this.feriadosService.desativar(id);
+  }
+
+  @Delete('deletar/:id')
+  deletar(@Param('id') id: string){
+    return this.feriadosService.delete(id);
+  }
 }

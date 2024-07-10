@@ -88,14 +88,17 @@ export class FeriadosService {
   findAll() {
     const buscarTudo = this.prisma.feriados.findMany({
       select: {
+        id: true,
         nome: true,
         data: true,
         descricao: true,
         nivel: true,
-        tipo: true
+        tipo: true,
+        status: true,
+        modo: true
       },
       orderBy: {
-
+        data: 'desc'
       }
     });
     if (!buscarTudo) { throw new ForbiddenException('Não foi possivel encontrar feriados') }
@@ -105,11 +108,14 @@ export class FeriadosService {
   async findOne(data: Date) {
     const buscaData = await this.prisma.feriados.findMany({
       select: {
+        id: true,
         nome: true,
         data: true,
         descricao: true,
         nivel: true,
-        tipo: true
+        tipo: true,
+        status: true,
+        modo: true
       },
       where: {
         AND: [
@@ -173,6 +179,7 @@ export class FeriadosService {
         nome
       },
       select: {
+        id: true,
         nome: true,
         data: true,
         descricao: true,
@@ -182,9 +189,28 @@ export class FeriadosService {
         modo: true
       }
     })
-
-    if (!busca) throw new ForbiddenException('não foi possivel achar um feriado')
-
+    if (!busca) throw new ForbiddenException('Não foi possivel achar um feriado')
     return busca;
+  }
+
+  async desativar(id: string) {
+    const feriadoAlvo = this.prisma.feriados.findUnique({
+      where: { id },
+      select: { id: true, status: true }
+    }) 
+    const feriado = this.prisma.feriados.update({
+      where: {id: (await feriadoAlvo).id},
+      data: {status: (await feriadoAlvo).status === 1 ? 0 : 1}
+    });
+    if (!feriado) throw new ForbiddenException("Não foi possivel desativar este feriado")
+    return feriado;
+  }
+
+  async delete(id: string) {
+    const feriado = this.prisma.feriados.delete({
+      where: { id }
+    })
+    if (!feriado) throw new ForbiddenException("Não foi possivel deletar este feriado")
+    return feriado
   }
 }
