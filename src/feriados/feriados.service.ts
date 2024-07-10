@@ -15,11 +15,6 @@ export class FeriadosService {
     private app: AppService
   ) { }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
-  async handleCron() {
-    console.log('Called when the current second is 10');
-  }
-
   async gera_log(id_feriado: string, estado: any, id_usuario: string) {
     await this.prisma.log.create({
       data: { id_feriado, estado: estado, id_usuario }
@@ -45,45 +40,6 @@ export class FeriadosService {
       return criar;
     }
   }
-
-
-  async tarefa_recorrente() {
-    const recorrentes = await this.prisma.recorrente.findMany({
-      where: {
-        status: 1,
-      },
-      select: {
-        nome: true,
-        data: true,
-        descricao: true,
-        nivel: true,
-        tipo: true,
-        modo: true,
-        status: true,
-      },
-    });
-
-
-    const feriadosData = recorrentes.map((recorrente) => {
-      return {
-        nome: recorrente.nome,
-        data: recorrente.data,
-        descricao: recorrente.descricao,
-        nivel: recorrente.nivel,
-        tipo: recorrente.tipo,
-        modo: recorrente.modo,
-        status: recorrente.status,
-      };
-    });
-
-
-    const registrarFeriados = await this.prisma.feriados.createMany({
-      data: feriadosData,
-    });
-
-    return registrarFeriados;
-  }
-
 
   findAll() {
     const buscarTudo = this.prisma.feriados.findMany({
@@ -212,5 +168,40 @@ export class FeriadosService {
     })
     if (!feriado) throw new ForbiddenException("Não foi possivel deletar este feriado")
     return feriado
+  }
+
+  
+  @Cron(CronExpression.EVERY_YEAR)
+  async gerarDataRecorrente() {
+    const recorrentes = await this.prisma.recorrente.findMany({
+      select: {
+        nome: true,
+        data: true,
+        descricao: true,
+        nivel: true,
+        tipo: true,
+        status: true,
+        modo: true
+      }
+    });
+
+    const ano = new Date().getFullYear() + 1;
+
+    const feriados = recorrentes.map(feriados => ({
+      nome: feriados.nome,
+      data: new Date(ano, feriados.data.getMonth(), feriados.data.getDate() + 1),
+      descricao: feriados.descricao,
+      nivel: feriados.nivel,
+      tipo: feriados.tipo,
+      status: feriados.status,
+      modo: feriados.modo
+    }));
+    const result = await this.prisma.feriados.createMany({
+      data: feriados
+    });
+
+    console.log("Foi");
+
+    return result;
   }
 }

@@ -42,10 +42,10 @@ export class FeriadosController {
     return this.feriadosService.atualizar(dataUp, updateFeriadoDto, usuario.id);
   }
 
-  @Post('gera-feriados-ano')
+  @Post('geraferiadosRecorrentes')
   tarefa_recorrente() {
     console.log("Tarefa recorrente executada");
-    return this.feriadosService.tarefa_recorrente();
+    // return this.feriadosService.gerarDataRecorrente();
   }
 
   @Patch('desativar/:id')
@@ -56,5 +56,11 @@ export class FeriadosController {
   @Delete('deletar/:id')
   deletar(@Param('id') id: string){
     return this.feriadosService.delete(id);
+  }
+
+  @Permissoes('ADM', 'DEV')
+  @Post('gerarFeriado')
+  gerarDataRecorrente(){
+    return this.feriadosService.gerarDataRecorrente();
   }
 }
