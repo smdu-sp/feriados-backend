@@ -41,7 +41,7 @@ export class FeriadosService {
     }
   }
 
-  findAll() {
+  async findAll() {
     const buscarTudo = this.prisma.feriados.findMany({
       select: {
         id: true,
@@ -61,7 +61,7 @@ export class FeriadosService {
     return buscarTudo;
   }
 
-  async findOne(data: Date) {
+  async findOne(data1: Date, data2?: Date) {
     const buscaData = await this.prisma.feriados.findMany({
       select: {
         id: true,
@@ -75,13 +75,13 @@ export class FeriadosService {
       },
       where: {
         AND: [
-          { data: { gte: data } },
-          { data: { lte: data } }
+          { data: { gte: data1 } },
+          { data: { lte: data2 || data1 } }
         ]
       }
     });
     if (!buscaData) { throw new ForbiddenException('Não foi possivel encontrar feriados') }
-    return buscaData
+    return data2 ? buscaData : buscaData.length > 0;
   }
 
   async buscarAno(ano: number) {
