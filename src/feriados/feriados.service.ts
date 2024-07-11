@@ -185,7 +185,7 @@ export class FeriadosService {
       }
     });
 
-    const ano = new Date().getFullYear() + 1;
+    const ano = new Date().getFullYear();
 
     const feriados = recorrentes.map(feriados => ({
       nome: feriados.nome,
@@ -199,9 +199,6 @@ export class FeriadosService {
     const result = await this.prisma.feriados.createMany({
       data: feriados
     });
-
-    console.log("Foi");
-
     return result;
   }
 }
