@@ -24,8 +24,13 @@ export class FeriadosController {
   }
 
   @IsPublic()
+  @Get('data/:data1')
+  findOne(@Param('data1') data1: string) {
+    return this.feriadosService.findOne(new Date(data1));
+  }
+  @IsPublic()
   @Get('data/:data1/:data2')
-  findOne(@Param('data1') data1: string, @Param('data2') data2?: string) {
+  buscaDatas(@Param('data1') data1: string, @Param('data2') data2?: string) {
     return this.feriadosService.findOne(new Date(data1), new Date(data2));
   }
 
