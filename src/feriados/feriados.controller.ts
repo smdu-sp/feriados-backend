@@ -22,16 +22,17 @@ export class FeriadosController {
   findAll() {
     return this.feriadosService.findAll();
   }
+  
+  @IsPublic()
+  @Get('data/:data1/:data2')
+  buscaDatasPeriodo(@Param('data1') data1: string, @Param('data2') data2?: string) {
+    return this.feriadosService.buscarDatas(new Date(data1), new Date(data2));
+  }
 
   @IsPublic()
   @Get('data/:data1')
-  findOne(@Param('data1') data1: string) {
-    return this.feriadosService.findOne(new Date(data1));
-  }
-  @IsPublic()
-  @Get('data/:data1/:data2')
-  buscaDatas(@Param('data1') data1: string, @Param('data2') data2?: string) {
-    return this.feriadosService.findOne(new Date(data1), new Date(data2));
+  buscaData(@Param('data1') data1: string) {
+    return this.feriadosService.buscarDatas(new Date(data1));
   }
 
   @IsPublic()

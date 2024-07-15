@@ -61,7 +61,7 @@ export class FeriadosService {
     return buscarTudo;
   }
 
-  async findOne(data1: Date, data2?: Date) {
+  async buscarDatas(data1: Date, data2?: Date) {
     const buscaData = await this.prisma.feriados.findMany({
       select: {
         id: true,
