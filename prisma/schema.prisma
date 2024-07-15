@@ -37,9 +37,11 @@ model Usuario {
 model Feriados {
   id              String        @id @default(uuid())
   nome            String
-  data            DateTime      @unique
+  data            DateTime      @unique     @db.Date
   tipo            String
   nivel           String
+  status          Int
+  modo            Int
   descricao       String?
 
   log             Log[]
@@ -48,6 +50,23 @@ model Feriados {
   atualizadoEm    DateTime      @default(now()) @updatedAt
 
   @@map("feriados")
+}
+
+model Recorrente {
+  id              String        @id @default(uuid())
+  
+  nome            String
+  data            DateTime      @unique     @db.Date
+  tipo            String
+  nivel           String
+  status          Int
+  modo            Int
+  descricao       String?
+
+  criadoEm        DateTime      @default(now())
+  atualizadoEm    DateTime      @default(now()) @updatedAt
+
+  @@map("recorrente")
 }
 
 model Log {

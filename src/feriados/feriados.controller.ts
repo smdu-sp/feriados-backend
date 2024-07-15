@@ -3,6 +3,9 @@ import { FeriadosService } from './feriados.service';
 import { CreateFeriadoDto } from './dto/create-feriado.dto';
 import { UpdateFeriadoDto } from './dto/update-feriado.dto';
 import { Permissoes } from 'src/auth/decorators/permissoes.decorator';
+import { UsuarioAtual } from 'src/auth/decorators/usuario-atual.decorator';
+import { Usuario } from '@prisma/client';
+import { IsPublic } from 'src/auth/decorators/is-public.decorator';
 
 @Controller('feriados')
 export class FeriadosController {
@@ -10,28 +13,58 @@ export class FeriadosController {
 
   @Permissoes('DEV', 'ADM')
   @Post('criar')
-  create(@Body() createFeriadoDto: CreateFeriadoDto) {
-    return this.feriadosService.create(createFeriadoDto);
+  create(@Body() createFeriadoDto: CreateFeriadoDto, @UsuarioAtual() usuario: Usuario) {
+    return this.feriadosService.create(createFeriadoDto, usuario.id);
   }
 
+  @IsPublic()
   @Get('buscar')
   findAll() {
     return this.feriadosService.findAll();
   }
 
-  @Get('data/:data')
-  findOne(@Param('data') data: string) {
-    var novaData = new Date(data)
-    return this.feriadosService.findOne(novaData);
+  @IsPublic()
+  @Get('data/:data1')
+  findOne(@Param('data1') data1: string) {
+    return this.feriadosService.findOne(new Date(data1));
+  }
+  @IsPublic()
+  @Get('data/:data1/:data2')
+  buscaDatas(@Param('data1') data1: string, @Param('data2') data2?: string) {
+    return this.feriadosService.findOne(new Date(data1), new Date(data2));
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFeriadoDto: UpdateFeriadoDto) {
-    return this.feriadosService.update(+id, updateFeriadoDto);
+  @IsPublic()
+  @Get('ano/:ano')
+  buscarAno(@Param('ano') ano: string) {
+    return this.feriadosService.buscarAno(+ano);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.feriadosService.remove(+id);
+  @Permissoes('DEV', 'ADM')
+  @Patch('atualizar/:data')
+  atualizar(@Param('data') dataUp: Date, @Body() updateFeriadoDto: UpdateFeriadoDto, @UsuarioAtual() usuario: Usuario) {
+    return this.feriadosService.atualizar(dataUp, updateFeriadoDto, usuario.id);
+  }
+
+  @Post('geraferiadosRecorrentes')
+  tarefa_recorrente() {
+    console.log("Tarefa recorrente executada");
+    // return this.feriadosService.gerarDataRecorrente();
+  }
+
+  @Patch('desativar/:id')
+  desativar(@Param('id') id: string) {
+    return this.feriadosService.desativar(id);
+  }
+
+  @Delete('deletar/:id')
+  deletar(@Param('id') id: string){
+    return this.feriadosService.delete(id);
+  }
+
+  @Permissoes('ADM', 'DEV')
+  @Post('gerarFeriado')
+  gerarDataRecorrente(){
+    return this.feriadosService.gerarDataRecorrente();
   }
 }
