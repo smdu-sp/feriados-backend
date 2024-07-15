@@ -22,17 +22,17 @@ export class FeriadosController {
   findAll() {
     return this.feriadosService.findAll();
   }
-  
-  @IsPublic()
-  @Get('data/:data1/:data2')
-  buscaDatasPeriodo(@Param('data1') data1: string, @Param('data2') data2?: string) {
-    return this.feriadosService.buscarDatas(new Date(data1), new Date(data2));
-  }
 
   @IsPublic()
   @Get('data/:data1')
-  buscaData(@Param('data1') data1: string) {
-    return this.feriadosService.buscarDatas(new Date(data1));
+  findOne(@Param('data1') data1: string) {
+    return this.feriadosService.findOne(new Date(data1));
+  }
+  
+  @IsPublic()
+  @Get('data/:data1/:data2')
+  buscaDatas(@Param('data1') data1: string, @Param('data2') data2?: string) {
+    return this.feriadosService.findOne(new Date(data1), new Date(data2));
   }
 
   @IsPublic()
@@ -47,13 +47,7 @@ export class FeriadosController {
     return this.feriadosService.atualizar(dataUp, updateFeriadoDto, usuario.id);
   }
 
-  @Post('geraferiadosRecorrentes')
-  tarefa_recorrente() {
-    console.log("Tarefa recorrente executada");
-    // return this.feriadosService.gerarDataRecorrente();
-  }
-
-  @Patch('desativar/:id')
+  @Patch('status/:id')
   desativar(@Param('id') id: string) {
     return this.feriadosService.desativar(id);
   }
@@ -67,5 +61,23 @@ export class FeriadosController {
   @Post('gerarFeriado')
   gerarDataRecorrente(){
     return this.feriadosService.gerarDataRecorrente();
+  }
+
+  @IsPublic()
+  @Get('feriados-inativos')
+  buscarFeriadosInativos(){
+    return this.feriadosService.buscarFeriadosInativos();
+  }
+
+  @IsPublic()
+  @Get('recorrentes')
+  buscarFeriadosRecorrente(){
+    return this.feriadosService.buscarFeriadosRecorrente();
+  }
+
+  @Permissoes('ADM', 'DEV')
+  @Patch('status-recorrentes/:id')
+  desativarRecorrentes(@Param('id') id: string) {
+    return this.feriadosService.desativarRecorrentes(id);
   }
 }
