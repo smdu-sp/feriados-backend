@@ -27,17 +27,9 @@ export class UsuariosService {
     return usuario.permissao;
   }
 
-  async listaCompleta() {
+  async listaCompleta(): Promise<Usuario[]> {
     const lista = await this.prisma.usuario.findMany({
-      orderBy: { nome: 'asc' },
-      select: {
-        id: true,
-        nome: true,
-        login: true,
-        email: true,
-        permissao: true,
-        status: true,
-      },
+      orderBy: { nome: 'asc' }
     });
     if (!lista || lista.length === 0) {
       throw new ForbiddenException('Nenhum usuário encontrado.');

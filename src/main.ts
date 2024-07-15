@@ -11,11 +11,11 @@ async function bootstrap() {
   });
 
   const options = new DocumentBuilder()
-    .setTitle('SISPEUC')
+    .setTitle('API de Feriados')
     .setDescription(
-      'O sistema moderno para aplicação das leis de Parcelamento, Edificação e Utilização Compulsórios da Prefeitura Municipal de São Paulo!',
+      'Listagem e criação de feriados nacionais/estaduais/municipais, dias ponte e pontos facultativos.',
     )
-    .setVersion('versão 2.0')
+    .setVersion('versão 1.0')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, options);
