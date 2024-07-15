@@ -12,7 +12,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 export class FeriadosService {
   constructor(
     private prisma: PrismaService,
-    private app: AppService
+    private app: AppService,
   ) { }
 
   async gera_log(id_feriado: string, estado: any, id_usuario: string) {
@@ -153,10 +153,10 @@ export class FeriadosService {
     const feriadoAlvo = this.prisma.feriados.findUnique({
       where: { id },
       select: { id: true, status: true }
-    }) 
+    })
     const feriado = this.prisma.feriados.update({
-      where: {id: (await feriadoAlvo).id},
-      data: {status: (await feriadoAlvo).status === 1 ? 0 : 1}
+      where: { id: (await feriadoAlvo).id },
+      data: { status: (await feriadoAlvo).status === 1 ? 0 : 1 }
     });
     if (!feriado) throw new ForbiddenException("Não foi possivel desativar este feriado")
     return feriado;
@@ -170,11 +170,12 @@ export class FeriadosService {
     return feriado
   }
 
-  
+
   @Cron(CronExpression.EVERY_YEAR)
   async gerarDataRecorrente() {
     const recorrentes = await this.prisma.recorrente.findMany({
       select: {
+        id: true,
         nome: true,
         data: true,
         descricao: true,
@@ -182,6 +183,9 @@ export class FeriadosService {
         tipo: true,
         status: true,
         modo: true
+      },
+      where: {
+        status: 0
       }
     });
 
@@ -200,5 +204,45 @@ export class FeriadosService {
       data: feriados
     });
     return result;
+  }
+
+  async buscarFeriadosInativos() {
+    const feriados = this.prisma.feriados.findMany({
+      where: {
+        status: 1
+      }
+    })
+    if (!feriados) throw new ForbiddenException("Não foi possivel buscar feriado recorrente")
+    return feriados;
+  }
+
+  async buscarFeriadosRecorrente() {
+    const recorrentes = this.prisma.recorrente.findMany({
+      select: {
+        id: true,
+        nome: true,
+        data: true,
+        descricao: true,
+        nivel: true,
+        tipo: true,
+        status: true,
+        modo: true
+      }
+    });
+    if (!recorrentes) throw new ForbiddenException("Não foi possivel buscar feriado recorrente")
+    return recorrentes;
+  }
+
+  async desativarRecorrentes(id: string) {
+    const feriadoAlvo = this.prisma.recorrente.findUnique({
+      where: { id },
+      select: { id: true, status: true }
+    })
+    const feriado = this.prisma.recorrente.update({
+      where: { id: (await feriadoAlvo).id },
+      data: { status: (await feriadoAlvo).status === 1 ? 0 : 1 }
+    });
+    if (!feriado) throw new ForbiddenException("Não foi possivel desativar este feriado")
+    return feriado;
   }
 }
