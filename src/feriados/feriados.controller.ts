@@ -9,17 +9,18 @@ import { IsPublic } from 'src/auth/decorators/is-public.decorator';
 
 @Controller('feriados')
 export class FeriadosController {
-  constructor(private readonly feriadosService: FeriadosService) {}
+  constructor(private readonly feriadosService: FeriadosService) { }
 
   @IsPublic()
   @Get("buscarTudo")
   buscarTudo(
-    @Query('status') status?: string, 
+    @Query('status') status?: string,
     @Query('pagina') pagina?: string,
     @Query('limite') limite?: string,
     @Query('busca') busca?: string,
   ) {
-    return this.feriadosService.buscarTudo(+pagina, +limite, busca, +status); }
+    return this.feriadosService.buscarTudo(+pagina, +limite, busca, +status);
+  }
 
   @Permissoes('DEV', 'ADM')
   @Post('criar')
@@ -32,23 +33,24 @@ export class FeriadosController {
   findOne(@Param('data1') data1: string) {
     return this.feriadosService.findOne(new Date(data1));
   }
-  
+
   @IsPublic()
   @Get('data/:data1/:data2')
   buscaDatas(@Param('data1') data1: string, @Param('data2') data2?: string) {
     return this.feriadosService.findOne(new Date(data1), new Date(data2));
   }
 
- @IsPublic()
+  @IsPublic()
   @Get("ano/:ano")
   buscaAno(
     @Param('ano') ano: string,
     @Query('pagina') pagina?: string,
     @Query('limite') limite?: string,
     @Query('busca') busca?: string,
-    @Query('status') status?: string 
+    @Query('status') status?: string
   ) {
-    return this.feriadosService.buscarAno(+ano, +pagina, +limite, busca, +status); }
+    return this.feriadosService.buscarAno(+ano, +pagina, +limite, busca, +status);
+  }
 
   @Permissoes('DEV', 'ADM')
   @Patch('atualizar/:data')
@@ -62,37 +64,42 @@ export class FeriadosController {
   }
 
   @Delete('deletar/:id')
-  deletar(@Param('id') id: string){
+  deletar(@Param('id') id: string) {
     return this.feriadosService.delete(id);
   }
 
   @Permissoes('ADM', 'DEV')
   @Post('gerarFeriado')
-  gerarDataRecorrente(){
+  gerarDataRecorrente() {
     return this.feriadosService.gerarDataRecorrente();
   }
 
   @IsPublic()
   @Get('recorrentes')
-  buscarFeriadosRecorrente(){
-    return this.feriadosService.buscarFeriadosRecorrente();
+  buscarFeriadosRecorrente(
+    @Query('status') status?: string,
+    @Query('pagina') pagina?: string,
+    @Query('limite') limite?: string,
+    @Query('busca') busca?: string,
+  ) {
+    return this.feriadosService.buscarFeriadosRecorrente(+status, +pagina, +limite, busca);
   }
 
   @Permissoes('ADM', 'DEV')
   @Patch('recorrentes/status/:id')
   desativarRecorrentes(@Param('id') id: string) {
-    return this.feriadosService.desativarRecorrentes(id);
+    return this.feriadosService.statusRecorrentes(id);
   }
 
   @IsPublic()
   @Get("recorrente/:id")
-  buscarRecorrenteId(@Param("id") id: string){
+  buscarRecorrenteId(@Param("id") id: string) {
     return this.feriadosService.buscarRecorrenteId(id)
   }
 
   @IsPublic()
   @Patch("recorrente/atualizar/:id")
-  atualizarRecorrente(@Param("id") id: string, @Body() updateFeriadoDto: UpdateFeriadoDto){
+  atualizarRecorrente(@Param("id") id: string, @Body() updateFeriadoDto: UpdateFeriadoDto) {
     return this.feriadosService.atualizarRecorrente(id, updateFeriadoDto)
   }
 }

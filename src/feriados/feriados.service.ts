@@ -1,11 +1,8 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateFeriadoDto } from './dto/create-feriado.dto';
-import { Log } from './dto/create-feriado.dto';
 import { UpdateFeriadoDto } from './dto/update-feriado.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppService } from 'src/app.service';
-import { equal } from 'assert';
-import { contains, equals } from 'class-validator';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
@@ -97,27 +94,12 @@ export class FeriadosService {
     return data2 ? buscaData : buscaData.length > 0;
   }
 
-  // async buscarAno(ano: number) {
-  //   const busca_ano = this.prisma.feriados.findMany({
-  //     where: {
-  //       AND: [
-  //         { data: { gte: new Date(`${ano}-01-01`) } },
-  //         { data: { lt: new Date(`${ano + 1}-01-01`) } }
-  //       ]
-  //     },
-  //     orderBy: {
-  //       data: 'asc'
-  //     }
-  //   })
-  //   if (!busca_ano) { throw new ForbiddenException('Não foi possivel encontrar feriados') }
-  //   return busca_ano;
-  // }
   async buscarAno(
     ano: number,
     pagina: number,
     limite: number,
     busca?: string,
-    status: number = 1,
+    status: number = 0,
   ) {
     [pagina, limite] = this.app.verificaPagina(pagina, limite);
     console.log(ano);  
@@ -269,8 +251,36 @@ export class FeriadosService {
     return result;
   }
 
-  async buscarFeriadosRecorrente() {
-    const recorrentes = this.prisma.recorrente.findMany({
+   async buscarFeriadosRecorrente(
+    status?: number,
+    pagina?: number,
+    limite?: number,
+    busca?: string,
+  ) {
+    [pagina, limite] = this.app.verificaPagina(pagina, limite);  
+    const searchParams = {
+      ...(busca ?
+        {
+          OR: [
+            { nome: { contains: busca } },
+            { tipo: { contains: busca } },
+          ]
+        } :
+        {}),
+    };
+    const total = await this.prisma.recorrente.count({
+      where: {
+        ...searchParams,
+        status
+      }
+    });
+    if (total == 0) return { total: 0, pagina: 0, limite: 0, users: [] };
+    [pagina, limite] = this.app.verificaLimite(pagina, limite, total);
+    const feriados = await this.prisma.recorrente.findMany({
+      where: {
+        ...searchParams, 
+        status
+      },
       select: {
         id: true,
         nome: true,
@@ -280,13 +290,19 @@ export class FeriadosService {
         tipo: true,
         status: true,
         modo: true
-      }
+      },
+      skip: (pagina - 1) * limite,
+      take: limite,
     });
-    if (!recorrentes) throw new ForbiddenException("Não foi possivel buscar feriado recorrente")
-    return recorrentes;
+    return {
+      total: +total,
+      pagina: +pagina,
+      limite: +limite,
+      data: feriados
+    };
   }
 
-  async desativarRecorrentes(id: string) {
+  async statusRecorrentes(id: string) {
     const feriadoAlvo = this.prisma.recorrente.findUnique({
       where: { id },
       select: { id: true, status: true }
