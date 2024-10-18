@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateFeriadoDto } from './dto/create-feriado.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppService } from 'src/app.service';
+import { format } from 'path';
 
 @Injectable()
 export class FeriadosService {
@@ -45,6 +46,9 @@ export class FeriadosService {
   }
 
   async findOne(data1: Date, data2?: Date) {
+
+    if (!data2 || !data1) throw new ForbiddenException('data não valida')
+
     const buscaData = await this.prisma.feriados.findMany({
       select: {
         id: true,
@@ -102,5 +106,34 @@ export class FeriadosService {
     return busca;
   }
 
+  async buscarDiasUteis(data1: Date, data2: Date) {
+    const buscaFeriado = await this.findOne(data1, data2);
+    if (!buscaFeriado) { throw new ForbiddenException('Não foi possivel encontrar feriados') }
+    
+    let data = new Date(data1.toISOString().split('T')[0]);
+    const endDate = new Date(data2.toISOString().split('T')[0]);
 
+    const tamanho = Array.isArray(buscaFeriado) ? buscaFeriado.length : 0;
+
+    const diasSemfds = [];
+    while (data <= endDate) {
+      if (data.getDay() < 5) {
+        diasSemfds.push(new Date(data));
+      }
+      data.setDate(data.getDate() + 1);
+    }
+
+    const feriados = []
+    for (let i = 0; i < tamanho; i++) {
+      feriados.push(new Date(buscaFeriado[i].data));
+    }
+
+    const diasUteis = diasSemfds.filter((d) => !feriados.toString().includes(d));
+
+    return {
+      diasUteis,
+      quantidade: diasUteis.length,
+      feriados
+    };
+  }
 }

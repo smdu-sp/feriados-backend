@@ -52,5 +52,9 @@ export class FeriadosController {
     return this.feriadosService.buscarPorNome(nome)
   }
 
-
+  @IsPublic()
+  @Get('diasUteis/:data1/:data2')
+  buscarDiasUteis(@Param('data1') data1: string, @Param('data2') data2?: string) {
+    return this.feriadosService.buscarDiasUteis(new Date(data1), new Date(data2));
+  }
 }
