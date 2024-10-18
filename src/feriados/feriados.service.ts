@@ -101,4 +101,6 @@ export class FeriadosService {
     if (!busca) throw new ForbiddenException('Não foi possivel achar um feriado')
     return busca;
   }
+
+
 }
