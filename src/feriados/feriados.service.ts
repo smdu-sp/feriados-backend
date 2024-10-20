@@ -139,4 +139,43 @@ export class FeriadosService {
     };
 }
 
+
+  async diasUteisReferentes(data: Date, quantidade: number) {
+    const diaInicial = new Date(data);
+    const diaFinal = new Date(diaInicial).setDate( diaInicial.getDate() + quantidade);
+
+    const buscaFeriado = await this.findOne(diaInicial, new Date(diaFinal));
+    
+    if (!buscaFeriado) { 
+      throw new ForbiddenException('Não foi possível encontrar feriados'); 
+  }
+  
+  console.log(diaInicial.toLocaleDateString('pt-BR'));
+  console.log(new Date(diaFinal).toLocaleDateString('pt-BR'));
+
+  const diasSemFds = [];
+
+  let currentDate = new Date(diaInicial);
+  const endDate = new Date(diaFinal);
+
+  while (currentDate <= endDate) {
+
+      if (currentDate.getDay() !== 6 && currentDate.getDay() !== 5) {
+          diasSemFds.push(new Date(currentDate));
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+  }
+  const feriados = []
+  if (Array.isArray(buscaFeriado)) feriados.push(...buscaFeriado.map(feriado => new Date(feriado.data)));
+
+  const diasUteis = diasSemFds.filter(d => !feriados.some(f => f.toLocaleDateString('pt-BR') === d.toLocaleDateString('pt-BR')));
+
+  return {
+    diasUteis,
+    quantidade: diasUteis.length,
+    feriados,
+    dia_final: diasUteis[diasUteis.length - 1],
+    dia_expiracao: new Date(new Date(diasUteis[diasUteis.length - 1]).setDate(new Date(diasUteis[diasUteis.length - 1]).getDate() + 1))
+  };
+}
 }

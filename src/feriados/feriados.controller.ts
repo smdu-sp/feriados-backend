@@ -57,4 +57,10 @@ export class FeriadosController {
   buscarDiasUteis(@Param('data1') data1: string, @Param('data2') data2?: string) {
     return this.feriadosService.buscarDiasUteis(new Date(data1), new Date(data2));
   }
+
+  @IsPublic()
+  @Get('diasUteisReferentes/:data/:quantidade')
+  diasUteisReferentes(@Param('data') data: string, @Param('quantidade') quantidade: string) {
+    return this.feriadosService.diasUteisReferentes(new Date(data), +quantidade);
+  }
 }
