@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Body } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Query } from '@nestjs/common';
 import { FeriadosService } from './feriados.service';
 import { IsPublic } from 'src/auth/decorators/is-public.decorator';
 import { CreateFeriadoDto } from './dto/create-feriado.dto';
@@ -53,14 +53,19 @@ export class FeriadosController {
   }
 
   @IsPublic()
-  @Get('diasUteis/:data1/:data2')
-  buscarDiasUteis(@Param('data1') data1: string, @Param('data2') data2?: string) {
-    return this.feriadosService.buscarDiasUteis(new Date(data1), new Date(data2));
+  @Get('diasUteis/:data/:limite')
+  buscarDiasUteis(
+    @Param('data') data: string, 
+    @Param('limite') limite?: string 
+  ) {
+
+    limite.includes('-') ? new Date(limite) : parseInt(limite);
+    return this.feriadosService.buscarDiasUteis(new Date(data), limite);
   }
 
   @IsPublic()
-  @Get('diasUteisReferentes/:data/:quantidade')
-  diasUteisReferentes(@Param('data') data: string, @Param('quantidade') quantidade: string) {
-    return this.feriadosService.diasUteisReferentes(new Date(data), +quantidade);
+  @Get('diasUteisCorridos/:data/:quantidade')
+  diasUteisCorridos(@Param('data') data: string, @Param('quantidade') quantidade: string) {
+    return this.feriadosService.diasUteisCorridos(new Date(data), +quantidade);
   }
 }

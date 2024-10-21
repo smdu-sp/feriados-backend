@@ -47,8 +47,6 @@ export class FeriadosService {
 
   async findOne(data1: Date, data2?: Date) {
 
-    if (!data2 || !data1) throw new ForbiddenException('data não valida')
-
     const buscaData = await this.prisma.feriados.findMany({
       select: {
         id: true,
@@ -106,26 +104,31 @@ export class FeriadosService {
     return busca;
   }
 
-  async buscarDiasUteis(data1: Date, data2: Date) {
-    const buscaFeriado = await this.findOne(data1, data2);
-    if (!buscaFeriado) { 
-        throw new ForbiddenException('Não foi possível encontrar feriados'); 
+  async buscarDiasUteis(data1: Date, limite: any) {
+
+    let endDate: Date;
+
+    if (limite.includes('-')) {
+      endDate = new Date(limite);
+    } else {
+      const diaInicial = new Date(data1);
+      endDate = new Date(new Date(diaInicial).setDate(diaInicial.getDate() + parseInt(limite)));
     }
-    
-    console.log(data1.toLocaleDateString('pt-BR'));
-    console.log(data2.toLocaleDateString('pt-BR'));
+
+    const buscaFeriado = await this.findOne(data1, endDate);
+    if (!buscaFeriado) {
+      throw new ForbiddenException('Não foi possível encontrar feriados');
+    }
 
     const diasSemFds = [];
-
     let currentDate = new Date(data1);
-    const endDate = new Date(data2);
 
     while (currentDate <= endDate) {
 
-        if (currentDate.getDay() !== 6 && currentDate.getDay() !== 0) {
-            diasSemFds.push(new Date(currentDate));
-        }
-        currentDate.setDate(currentDate.getDate() + 1);
+      if (currentDate.getDay() !== 6 && currentDate.getDay() !== 0) {
+        diasSemFds.push(new Date(currentDate));
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
     }
     const feriados = []
     if (Array.isArray(buscaFeriado)) feriados.push(...buscaFeriado.map(feriado => new Date(feriado.data)));
@@ -133,49 +136,45 @@ export class FeriadosService {
     const diasUteis = diasSemFds.filter(d => !feriados.some(f => f.toLocaleDateString('pt-BR') === d.toLocaleDateString('pt-BR')));
 
     return {
-        diasUteis,
-        quantidade: diasUteis.length,
-        feriados
+      diasUteis,
+      quantidade: diasUteis.length,
+      feriados,
+      dia_final: diasUteis[diasUteis.length - 1],
+      dia_expiracao: new Date(new Date(diasUteis[diasUteis.length - 1]).setDate(new Date(diasUteis[diasUteis.length - 1]).getDate() + 1))
     };
-}
-
-
-  async diasUteisReferentes(data: Date, quantidade: number) {
-    const diaInicial = new Date(data);
-    const diaFinal = new Date(diaInicial).setDate( diaInicial.getDate() + quantidade);
-
-    const buscaFeriado = await this.findOne(diaInicial, new Date(diaFinal));
-    
-    if (!buscaFeriado) { 
-      throw new ForbiddenException('Não foi possível encontrar feriados'); 
   }
-  
-  console.log(diaInicial.toLocaleDateString('pt-BR'));
-  console.log(new Date(diaFinal).toLocaleDateString('pt-BR'));
 
-  const diasSemFds = [];
+  async diasUteisCorridos(data: Date, quantidade: number) {
+    console.log(data, quantidade);
+    let diasUteis = [];
 
-  let currentDate = new Date(diaInicial);
-  const endDate = new Date(diaFinal);
+    for (let i = 0; diasUteis.length < quantidade; i++) {
+      const dataInicial = new Date(new Date(data).setDate(data.getDate() + i));
+      const feriado = await this.findOne(dataInicial);
 
-  while (currentDate <= endDate) {
-
-      if (currentDate.getDay() !== 6 && currentDate.getDay() !== 5) {
-          diasSemFds.push(new Date(currentDate));
+      if (!feriado && dataInicial.getDay() !== 0 && dataInicial.getDay() !== 6) {
+        diasUteis.push(dataInicial.toISOString().split("T")[0]);
       }
-      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    let dataExpiracao: Date;
+
+    const ultimaData = new Date(diasUteis[diasUteis.length - 1])
+    console.log(ultimaData);
+    
+    while (dataExpiracao === undefined) {
+      const proximaData = new Date(ultimaData.setDate(ultimaData.getDate() + 1));
+
+      const feriado = await this.findOne(proximaData);
+
+      if (!feriado && proximaData.getDay() !== 6 && proximaData.getDay() !== 0) {
+        dataExpiracao = proximaData;
+      }
+    }
+
+    return {
+      diasUteis,
+      dataExpiracao: dataExpiracao.toISOString().split("T")[0]
+    }
   }
-  const feriados = []
-  if (Array.isArray(buscaFeriado)) feriados.push(...buscaFeriado.map(feriado => new Date(feriado.data)));
-
-  const diasUteis = diasSemFds.filter(d => !feriados.some(f => f.toLocaleDateString('pt-BR') === d.toLocaleDateString('pt-BR')));
-
-  return {
-    diasUteis,
-    quantidade: diasUteis.length,
-    feriados,
-    dia_final: diasUteis[diasUteis.length - 1],
-    dia_expiracao: new Date(new Date(diasUteis[diasUteis.length - 1]).setDate(new Date(diasUteis[diasUteis.length - 1]).getDate() + 1))
-  };
-}
 }
